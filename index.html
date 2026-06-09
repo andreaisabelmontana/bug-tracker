@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bug Tracker · Issue tracking that tags & assigns itself</title>
+<meta name="description" content="A comprehensive issue tracker with web + CLI, automated tag generation from content, and intelligent assignee suggestions based on expertise and workload. An interactive project showcase." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#15131a;
+    --paper:#f5f4f6;
+    --paper-2:#eae8ed;
+    --line:#dbd7e0;
+    --accent:#4b56d2;
+    --bug:#c0492f;
+    --good:#2f8f63;
+    --muted:#666272;
+    --shadow:0 1px 0 rgba(0,0,0,.04), 0 18px 40px -28px rgba(21,19,26,.5);
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Inter",system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  h1,h2,h3{font-family:"Fraunces",Georgia,serif;font-weight:500;line-height:1.08;letter-spacing:-.01em}
+  a{color:var(--accent);text-decoration:none}
+  code,.mono{font-family:"JetBrains Mono",monospace}
+
+  header.bar{position:sticky;top:0;z-index:30;background:rgba(245,244,246,.85);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .bar .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .brand{font-family:"Fraunces",serif;font-size:1.05rem;display:flex;align-items:center;gap:9px}
+  nav.links a{color:var(--muted);font-size:.86rem;margin-left:22px;font-weight:500}
+  nav.links a:hover{color:var(--ink)}
+  @media(max-width:760px){nav.links{display:none}}
+
+  .hero{padding:84px 0 60px;border-bottom:1px solid var(--line)}
+  .kicker{font-family:"JetBrains Mono",monospace;font-size:.74rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--accent);margin:0 0 18px}
+  .hero h1{font-size:clamp(2.4rem,5.4vw,4.2rem);margin:0 0 20px;max-width:16ch}
+  .hero p.lede{font-size:1.18rem;max-width:60ch;color:#272430;margin:0 0 30px}
+  .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:999px;
+    font-weight:600;font-size:.9rem;border:1px solid var(--ink);background:var(--ink);color:var(--paper);
+    transition:transform .15s ease}
+  .btn:hover{transform:translateY(-2px)}
+  .btn.ghost{background:transparent;color:var(--ink)}
+
+  /* ---- triage demo ---- */
+  .demo{margin-top:52px;background:#fff;border:1px solid var(--line);border-radius:var(--r);
+    box-shadow:var(--shadow);overflow:hidden}
+  .demo .top{padding:14px 18px;border-bottom:1px solid var(--line);background:var(--paper-2)}
+  .demo .top .t{font-family:"Fraunces",serif;font-size:1rem}
+  .demo .top .h{font-size:.8rem;color:var(--muted);margin-top:2px}
+  .demo .body{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  @media(max-width:680px){.demo .body{grid-template-columns:1fr}}
+  .left{padding:18px;border-right:1px solid var(--line)}
+  @media(max-width:680px){.left{border-right:none;border-bottom:1px solid var(--line)}}
+  .right{padding:18px}
+  .lbl{font-family:"JetBrains Mono",monospace;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+  .demo input[type=text],.demo textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 12px;
+    font-family:inherit;font-size:.9rem;outline:none;background:#fff}
+  .demo textarea{min-height:70px;resize:vertical;margin-top:10px}
+  .demo input:focus,.demo textarea:focus{border-color:var(--accent)}
+  .examples{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .examples button{font-size:.74rem;padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--paper-2);cursor:pointer}
+  .out{margin-bottom:18px}
+  .tags{display:flex;gap:7px;flex-wrap:wrap;min-height:28px}
+  .tg{font-family:"JetBrains Mono",monospace;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:6px;color:#fff}
+  .t-bug{background:var(--bug)}.t-frontend{background:#2f5fd0}.t-backend{background:#2f8f63}.t-performance{background:#c4762a}
+  .tags .none{color:var(--muted);font-family:"Inter";font-weight:400;font-size:.84rem}
+  .assignee{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--good);border-radius:10px;background:rgba(47,143,99,.08)}
+  .assignee .av{width:38px;height:38px;border-radius:50%;background:var(--good);color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+  .assignee .nm{font-weight:600}
+  .assignee .rs{font-size:.78rem;color:var(--muted)}
+  .assignee.empty{border-color:var(--line);background:var(--paper-2)}
+  .assignee.empty .av{background:var(--muted)}
+  .team{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .tm{display:flex;align-items:center;gap:10px;font-size:.82rem;padding:7px 10px;border:1px solid var(--line);border-radius:9px}
+  .tm.win{border-color:var(--good);box-shadow:inset 0 0 0 1px var(--good)}
+  .tm .nm{font-weight:600;min-width:48px}
+  .tm .ex{color:var(--muted);font-family:"JetBrains Mono",monospace;font-size:.7rem}
+  .tm .wl{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:.7rem;color:var(--muted)}
+  .tm .sc{font-family:"JetBrains Mono",monospace;font-size:.72rem;font-weight:700;color:var(--good)}
+
+  section{padding:74px 0;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
+  h2{font-size:clamp(1.8rem,3.6vw,2.6rem);margin:0 0 14px}
+  .section-lede{max-width:62ch;color:#2a2733;font-size:1.05rem}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:36px}
+  @media(max-width:760px){.grid3{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--shadow)}
+  .card .ic{font-size:1.5rem}
+  .card h3{font-size:1.14rem;margin:10px 0 6px}
+  .card p{margin:0;font-size:.92rem;color:#403b48}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+  .chip{padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:#fff;font-size:.85rem;font-weight:500}
+  footer{padding:48px 0 70px}
+  footer .wrap{color:var(--muted);font-size:.85rem}
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+  .reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <div class="wrap">
+    <div class="brand">🐞 Bug Tracker</div>
+    <nav class="links">
+      <a href="#auto">Automation</a>
+      <a href="#features">Features</a>
+      <a href="#stack">Stack</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <p class="kicker">FastAPI + Typer CLI · CI/CD · Azure</p>
+    <h1>An issue tracker that tags and assigns itself.</h1>
+    <p class="lede">A comprehensive issue-tracking system with both a web UI and a CLI — featuring automated tag generation from issue content and intelligent assignee suggestions based on each team member's expertise and current workload.</p>
+    <div class="cta">
+      <a class="btn" href="#auto">See the automation →</a>
+      <a class="btn ghost" href="#stack">The stack</a>
+    </div>
+
+    <div class="demo" id="demo">
+      <div class="top">
+        <div class="t">Smart triage</div>
+        <div class="h">Describe a bug — watch it auto-tag and pick the best assignee.</div>
+      </div>
+      <div class="body">
+        <div class="left">
+          <p class="lbl">New issue</p>
+          <input id="title" type="text" placeholder="Issue title…" value="Login button crashes on slow network" />
+          <textarea id="desc" placeholder="Description / logs…">The submit form throws an error and the page hangs; the API request times out.</textarea>
+          <div class="examples" id="examples">
+            <button data-t="Database connection keeps failing" data-d="The server can't reach the db; backend api returns 500 errors.">DB outage</button>
+            <button data-t="Dashboard is slow to load" data-d="The interface lags badly, performance is poor on the main page.">Slow UI</button>
+            <button data-t="Typo on the contact form" data-d="Small ui wording fix on the form button label.">UI typo</button>
+          </div>
+        </div>
+        <div class="right">
+          <div class="out">
+            <p class="lbl">Auto-generated tags</p>
+            <div class="tags" id="tags"></div>
+          </div>
+          <div class="out">
+            <p class="lbl">Suggested assignee</p>
+            <div class="assignee" id="assignee"></div>
+          </div>
+          <p class="lbl">Team — expertise (for these tags) · open workload</p>
+          <div class="team" id="team"></div>
+        </div>
+      </div>
+    </div>
+    <p style="font-size:.8rem;color:var(--muted);margin-top:10px">↑ A faithful reproduction of the real keyword + workload logic, on sample team data.</p>
+  </div>
+</div>
+
+<section id="auto">
+  <div class="wrap reveal">
+    <p class="eyebrow">01 — Intelligent automation</p>
+    <h2>Two algorithms doing the boring part.</h2>
+    <div class="grid3">
+      <div class="card"><div class="ic">🏷️</div><h3>Automatic tags</h3><p>Analyzes title, description, and logs with case-insensitive, word-boundary keyword matching — every matching category becomes a tag.</p></div>
+      <div class="card"><div class="ic">🎯</div><h3>Smart assignee</h3><p>Ranks team members by success rate (closed issues per tag), breaking ties by lowest current workload.</p></div>
+      <div class="card"><div class="ic">⚡</div><h3>Priority-aware</h3><p>Auto-assignment focuses on high-priority, open issues — critical bugs go to the best available expert.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap reveal">
+    <p class="eyebrow">02 — Features</p>
+    <h2>Web, CLI, and everything between.</h2>
+    <div class="grid3">
+      <div class="card"><div class="ic">🖥️</div><h3>Dual interface</h3><p>A modern responsive web UI and a full Typer CLI for automation and scripting.</p></div>
+      <div class="card"><div class="ic">🗂️</div><h3>Projects & issues</h3><p>Organize projects with full CRUD, filtering, and search over issues and tags.</p></div>
+      <div class="card"><div class="ic">📊</div><h3>Analytics</h3><p>Charts and stats on tag usage and team performance.</p></div>
+      <div class="card"><div class="ic">❤️</div><h3>Observability</h3><p>Health checks and Prometheus metrics built in.</p></div>
+      <div class="card"><div class="ic">🐳</div><h3>Containerized</h3><p>Docker-ready with Azure Container Instances support.</p></div>
+      <div class="card"><div class="ic">🔁</div><h3>CI/CD gates</h3><p>Automated tests with coverage gates; deploy on green main.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="stack">
+  <div class="wrap reveal">
+    <p class="eyebrow">03 — Stack</p>
+    <h2>Built with.</h2>
+    <div class="chips">
+      <span class="chip">⚡ FastAPI</span>
+      <span class="chip">⌨️ Typer (CLI)</span>
+      <span class="chip">🗄 SQLite</span>
+      <span class="chip">🐳 Docker · Azure ACI</span>
+      <span class="chip">📊 Prometheus</span>
+      <span class="chip">🧪 pytest (coverage gate)</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Bug Tracker · an interactive project showcase, built from scratch.
+    The triage demo uses the real algorithm on sample team data.
+  </div>
+</footer>
+
+<script>
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+  const KEYWORDS={
+    bug:['error','bug','fail','crash','broken','issue'],
+    frontend:['ui','frontend','interface','button','form','page'],
+    backend:['backend','server','api','database','db'],
+    performance:['slow','performance','timeout','lag'],
+  };
+  // sample team: expertise = closed issues per tag; wl = open workload
+  const TEAM=[
+    {nm:'Ada', ex:{backend:8,performance:5,bug:2}, wl:3},
+    {nm:'Beck',ex:{frontend:9,bug:4}, wl:2},
+    {nm:'Cruz',ex:{bug:7,backend:6}, wl:5},
+    {nm:'Devi',ex:{performance:7,frontend:3,bug:1}, wl:1},
+  ];
+  const title=document.getElementById('title'), desc=document.getElementById('desc');
+  const tagsEl=document.getElementById('tags'), assigneeEl=document.getElementById('assignee'), teamEl=document.getElementById('team');
+
+  function detectTags(text){
+    const t=text.toLowerCase(); const out=[];
+    for(const [cat,words] of Object.entries(KEYWORDS)){
+      if(words.some(w=>new RegExp('\\b'+w+'\\b','i').test(t))) out.push(cat);
+    }
+    return out;
+  }
+  function score(member,tags){ return tags.reduce((s,tg)=>s+(member.ex[tg]||0),0); }
+  function render(){
+    const text=title.value+' '+desc.value;
+    const tags=detectTags(text);
+    tagsEl.innerHTML = tags.length? tags.map(t=>`<span class="tg t-${t}">${t.toUpperCase()}</span>`).join('') : '<span class="none">No tags matched yet — describe the issue.</span>';
+
+    // rank team
+    const ranked=TEAM.map(m=>({m,s:score(m,tags)})).sort((a,b)=> b.s-a.s || a.m.wl-b.m.wl);
+    const best = tags.length? ranked[0] : [...TEAM].sort((a,b)=>a.wl-b.wl).map(m=>({m,s:0}))[0];
+    if(tags.length && best.s>0){
+      assigneeEl.className='assignee';
+      assigneeEl.innerHTML=`<span class="av">${best.m.nm[0]}</span><div><div class="nm">${best.m.nm}</div><div class="rs">expertise ${best.s} for ${tags.join(', ')} · ${best.m.wl} open issues</div></div>`;
+    } else {
+      assigneeEl.className='assignee empty';
+      assigneeEl.innerHTML=`<span class="av">?</span><div><div class="nm">${best.m.nm} (lowest workload)</div><div class="rs">no tag match — falling back to least-busy teammate</div></div>`;
+    }
+    teamEl.innerHTML=TEAM.map(m=>{
+      const s=score(m,tags); const win = (tags.length&&best.s>0&&m.nm===best.m.nm);
+      const exStr=Object.entries(m.ex).map(([k,v])=>`${k}:${v}`).join(' ');
+      return `<div class="tm ${win?'win':''}"><span class="nm">${m.nm}</span><span class="ex">${exStr}</span><span class="wl">wl ${m.wl}</span><span class="sc">${tags.length?'+'+s:''}</span></div>`;
+    }).join('');
+  }
+  document.getElementById('examples').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    title.value=b.dataset.t; desc.value=b.dataset.d; render();
+  });
+  title.addEventListener('input',render); desc.addEventListener('input',render);
+  render();
+</script>
+</body>
+</html>
