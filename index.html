@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Bug Tracker · Issue tracking that tags & assigns itself</title>
-<meta name="description" content="A comprehensive issue tracker with web + CLI, automated tag generation from content, and intelligent assignee suggestions based on expertise and workload. An interactive project showcase." />
+<title>Bug Tracker · FastAPI + CLI that tags & assigns itself</title>
+<meta name="description" content="A FastAPI service + CLI for tracking bugs, with TF-IDF auto-tagging and TF-IDF-cosine assignee suggestion from resolved-bug history. Real Python backend; this page is an interactive showcase." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -71,7 +71,8 @@
   .out{margin-bottom:18px}
   .tags{display:flex;gap:7px;flex-wrap:wrap;min-height:28px}
   .tg{font-family:"JetBrains Mono",monospace;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:6px;color:#fff}
-  .t-bug{background:var(--bug)}.t-frontend{background:#2f5fd0}.t-backend{background:#2f8f63}.t-performance{background:#c4762a}
+  .t-crash{background:var(--bug)}.t-ui{background:#2f5fd0}.t-performance{background:#c4762a}
+  .t-auth{background:#7a3fb0}.t-database{background:#2f8f63}.t-network{background:#2a7d8c}
   .tags .none{color:var(--muted);font-family:"Inter";font-weight:400;font-size:.84rem}
   .assignee{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--good);border-radius:10px;background:rgba(47,143,99,.08)}
   .assignee .av{width:38px;height:38px;border-radius:50%;background:var(--good);color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
@@ -120,12 +121,12 @@
 
 <div class="hero">
   <div class="wrap">
-    <p class="kicker">FastAPI + Typer CLI · CI/CD · Azure</p>
-    <h1>An issue tracker that tags and assigns itself.</h1>
-    <p class="lede">A comprehensive issue-tracking system with both a web UI and a CLI — featuring automated tag generation from issue content and intelligent assignee suggestions based on each team member's expertise and current workload.</p>
+    <p class="kicker">FastAPI · CLI · SQLite · scikit-learn</p>
+    <h1>A bug tracker that tags and assigns itself.</h1>
+    <p class="lede">A FastAPI service and a CLI for tracking bugs, backed by SQLite — with two real algorithms doing triage: TF-IDF auto-tagging of each bug, and an assignee suggestion that ranks people by how similar the new bug is to the ones they've already resolved.</p>
     <div class="cta">
       <a class="btn" href="#auto">See the automation →</a>
-      <a class="btn ghost" href="#stack">The stack</a>
+      <a class="btn ghost" href="https://github.com/andreaisabelmontana/bug-tracker">Source on GitHub</a>
     </div>
 
     <div class="demo" id="demo">
@@ -135,41 +136,43 @@
       </div>
       <div class="body">
         <div class="left">
-          <p class="lbl">New issue</p>
-          <input id="title" type="text" placeholder="Issue title…" value="Login button crashes on slow network" />
-          <textarea id="desc" placeholder="Description / logs…">The submit form throws an error and the page hangs; the API request times out.</textarea>
+          <p class="lbl">New bug</p>
+          <input id="title" type="text" placeholder="Bug title…" value="App crashes on startup with a segfault" />
+          <textarea id="desc" placeholder="Description / logs…">Fatal exception and core dump immediately at launch; null pointer in the init routine.</textarea>
           <div class="examples" id="examples">
-            <button data-t="Database connection keeps failing" data-d="The server can't reach the db; backend api returns 500 errors.">DB outage</button>
-            <button data-t="Dashboard is slow to load" data-d="The interface lags badly, performance is poor on the main page.">Slow UI</button>
-            <button data-t="Typo on the contact form" data-d="Small ui wording fix on the form button label.">UI typo</button>
+            <button data-t="Database connection pool exhausted" data-d="SQL queries fail with a pool timeout and the db becomes unreachable.">DB</button>
+            <button data-t="Checkout page is extremely slow to load" data-d="High latency, the query takes several seconds, p99 is terrible.">Perf</button>
+            <button data-t="Cannot log in with the correct password" data-d="OAuth token is rejected and the auth session expires immediately.">Auth</button>
+            <button data-t="Dropdown menu renders off screen on mobile" data-d="The CSS layout breaks and the modal is not centered, bad styling.">UI</button>
+            <button data-t="Requests time out behind the proxy" data-d="Connection refused, the socket resets and TCP packets are dropped.">Network</button>
           </div>
         </div>
         <div class="right">
           <div class="out">
-            <p class="lbl">Auto-generated tags</p>
+            <p class="lbl">Auto-tags (TF-IDF classifier)</p>
             <div class="tags" id="tags"></div>
           </div>
           <div class="out">
-            <p class="lbl">Suggested assignee</p>
+            <p class="lbl">Suggested assignee (cosine vs. resolved history)</p>
             <div class="assignee" id="assignee"></div>
           </div>
-          <p class="lbl">Team — expertise (for these tags) · open workload</p>
+          <p class="lbl">Assignees — ranked by similarity to past resolved bugs</p>
           <div class="team" id="team"></div>
         </div>
       </div>
     </div>
-    <p style="font-size:.8rem;color:var(--muted);margin-top:10px">↑ A faithful reproduction of the real keyword + workload logic, on sample team data.</p>
+    <p style="font-size:.8rem;color:var(--muted);margin-top:10px">↑ A faithful in-browser reproduction of the real Python logic, on the project's seed history. The actual backend is a FastAPI + scikit-learn service — see the repo.</p>
   </div>
 </div>
 
 <section id="auto">
   <div class="wrap reveal">
-    <p class="eyebrow">01 — Intelligent automation</p>
-    <h2>Two algorithms doing the boring part.</h2>
+    <p class="eyebrow">01 — The algorithms</p>
+    <h2>Two real models doing the triage.</h2>
     <div class="grid3">
-      <div class="card"><div class="ic">🏷️</div><h3>Automatic tags</h3><p>Analyzes title, description, and logs with case-insensitive, word-boundary keyword matching — every matching category becomes a tag.</p></div>
-      <div class="card"><div class="ic">🎯</div><h3>Smart assignee</h3><p>Ranks team members by success rate (closed issues per tag), breaking ties by lowest current workload.</p></div>
-      <div class="card"><div class="ic">⚡</div><h3>Priority-aware</h3><p>Auto-assignment focuses on high-priority, open issues — critical bugs go to the best available expert.</p></div>
+      <div class="card"><div class="ic">🏷️</div><h3>Auto-tagging</h3><p>A TF-IDF vectorizer feeds a one-vs-rest Logistic Regression — one classifier per label (crash · ui · performance · auth · database · network). Multi-label, with a probability threshold, trained on a seed set.</p></div>
+      <div class="card"><div class="ic">🎯</div><h3>Assignee suggestion</h3><p>Builds one TF-IDF document per person from the bugs they've resolved, then ranks them by cosine similarity to the new bug. The closest match is suggested.</p></div>
+      <div class="card"><div class="ic">🔍</div><h3>Explainable</h3><p>Both are transparent: the tagger surfaces the terms that drove each label, and the suggester returns the full similarity scoreboard — no black box.</p></div>
     </div>
   </div>
 </section>
@@ -177,14 +180,14 @@
 <section id="features">
   <div class="wrap reveal">
     <p class="eyebrow">02 — Features</p>
-    <h2>Web, CLI, and everything between.</h2>
+    <h2>API, CLI, and a tested core.</h2>
     <div class="grid3">
-      <div class="card"><div class="ic">🖥️</div><h3>Dual interface</h3><p>A modern responsive web UI and a full Typer CLI for automation and scripting.</p></div>
-      <div class="card"><div class="ic">🗂️</div><h3>Projects & issues</h3><p>Organize projects with full CRUD, filtering, and search over issues and tags.</p></div>
-      <div class="card"><div class="ic">📊</div><h3>Analytics</h3><p>Charts and stats on tag usage and team performance.</p></div>
-      <div class="card"><div class="ic">❤️</div><h3>Observability</h3><p>Health checks and Prometheus metrics built in.</p></div>
-      <div class="card"><div class="ic">🐳</div><h3>Containerized</h3><p>Docker-ready with Azure Container Instances support.</p></div>
-      <div class="card"><div class="ic">🔁</div><h3>CI/CD gates</h3><p>Automated tests with coverage gates; deploy on green main.</p></div>
+      <div class="card"><div class="ic">⚡</div><h3>FastAPI service</h3><p>Create / list / get / update bugs, change status, and comment — auto-tag and suggest endpoints too. Interactive docs at <code>/docs</code>.</p></div>
+      <div class="card"><div class="ic">⌨️</div><h3>CLI</h3><p>The same database and algorithms from the terminal: <code>add</code>, <code>list</code>, <code>show</code>, <code>status</code>, <code>tag</code>, <code>suggest</code>.</p></div>
+      <div class="card"><div class="ic">🗄️</div><h3>SQLite-backed</h3><p>A dependency-free data layer over <code>sqlite3</code>: bugs + comments, status lifecycle, label and assignee filters.</p></div>
+      <div class="card"><div class="ic">🌱</div><h3>Seeded history</h3><p>Ships with 24 resolved bugs across 6 people, so assignee suggestions work the moment you start the server.</p></div>
+      <div class="card"><div class="ic">🔁</div><h3>Status lifecycle</h3><p>Every bug moves through open → in-progress → closed, with validation on every transition.</p></div>
+      <div class="card"><div class="ic">🧪</div><h3>pytest suite</h3><p>33 tests over the TestClient: auto-tags, assignee routing, CRUD, status transitions, and comments.</p></div>
     </div>
   </div>
 </section>
@@ -195,19 +198,19 @@
     <h2>Built with.</h2>
     <div class="chips">
       <span class="chip">⚡ FastAPI</span>
-      <span class="chip">⌨️ Typer (CLI)</span>
+      <span class="chip">⌨️ argparse CLI</span>
       <span class="chip">🗄 SQLite</span>
-      <span class="chip">🐳 Docker · Azure ACI</span>
-      <span class="chip">📊 Prometheus</span>
-      <span class="chip">🧪 pytest (coverage gate)</span>
+      <span class="chip">🤖 scikit-learn (TF-IDF + LogReg)</span>
+      <span class="chip">🔢 NumPy</span>
+      <span class="chip">🧪 pytest</span>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="wrap">
-    Bug Tracker · an interactive project showcase, built from scratch.
-    The triage demo uses the real algorithm on sample team data.
+    Bug Tracker · FastAPI + CLI with TF-IDF auto-tagging and cosine assignee suggestion.
+    This page is a static showcase; the demo reproduces the real Python logic in the browser.
   </div>
 </footer>
 
@@ -215,49 +218,74 @@
   const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}})},{threshold:.15});
   document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-  const KEYWORDS={
-    bug:['error','bug','fail','crash','broken','issue'],
-    frontend:['ui','frontend','interface','button','form','page'],
-    backend:['backend','server','api','database','db'],
-    performance:['slow','performance','timeout','lag'],
+  // --- faithful in-browser reproduction of app/tagging.py + app/suggest.py ---
+  // Auto-tagging: indicative vocabulary per label (the same terms the real
+  // TF-IDF + LogReg model learns top weights for). Score = weighted term hits;
+  // every label over a threshold is kept, best label always wins.
+  const LABELS=['crash','ui','performance','auth','database','network'];
+  const VOCAB={
+    crash:['crash','crashes','crashed','segfault','segmentation','fatal','exception','core','dump','null','pointer','panic','dies','die'],
+    ui:['ui','css','layout','button','dropdown','menu','modal','styling','theme','dark','contrast','screen','font','spacing','responsive','interface'],
+    performance:['slow','slowly','latency','lag','laggy','performance','timeout','throughput','optimize','p99','sluggish','load','memory','leak'],
+    auth:['login','log','auth','authentication','authorization','token','jwt','oauth','password','credentials','session','permission','sign'],
+    database:['database','db','sql','query','migration','schema','deadlock','transaction','pool','table','postgres','replica','rows'],
+    network:['network','proxy','dns','tls','socket','connection','refused','reset','tcp','packets','timeout','upstream','host','webhook','gateway'],
   };
-  // sample team: expertise = closed issues per tag; wl = open workload
-  const TEAM=[
-    {nm:'Ada', ex:{backend:8,performance:5,bug:2}, wl:3},
-    {nm:'Beck',ex:{frontend:9,bug:4}, wl:2},
-    {nm:'Cruz',ex:{bug:7,backend:6}, wl:5},
-    {nm:'Devi',ex:{performance:7,frontend:3,bug:1}, wl:1},
-  ];
+  // Assignee history corpus: each person's resolved-bug text (matches seed_bugs.json).
+  const HISTORY={
+    ada :'crash crashes fatal exception segfault core dump null pointer startup memory concurrency race',
+    beck:'ui css layout button dropdown menu modal styling dark mode contrast screen form labels mobile responsive',
+    cruz:'performance slow latency query index dashboard memory leak throughput optimize p99 search caching load',
+    devi:'auth authentication login token jwt oauth password credentials session permission authorization reset recovery',
+    evan:'database db sql migration schema deadlock transaction connection pool table query replica rows orm',
+    faye:'network proxy dns tls socket connection refused reset tcp packets timeout upstream host webhook gateway',
+  };
+  const ASSIGNEES=Object.keys(HISTORY);
+  const SPEC={ada:'crash',beck:'ui',cruz:'performance',devi:'auth',evan:'database',faye:'network'};
+
+  function tokens(s){return (s.toLowerCase().match(/[a-z]+/g)||[]);}
+  // term-frequency vector
+  function tf(toks){const v={};toks.forEach(t=>v[t]=(v[t]||0)+1);return v;}
+  function cosine(a,b){
+    let dot=0,na=0,nb=0;
+    for(const k in a){na+=a[k]*a[k]; if(b[k])dot+=a[k]*b[k];}
+    for(const k in b)nb+=b[k]*b[k];
+    return (na&&nb)? dot/Math.sqrt(na*nb) : 0;
+  }
+  const HVEC={}; for(const a of ASSIGNEES)HVEC[a]=tf(tokens(HISTORY[a]));
+
   const title=document.getElementById('title'), desc=document.getElementById('desc');
   const tagsEl=document.getElementById('tags'), assigneeEl=document.getElementById('assignee'), teamEl=document.getElementById('team');
 
   function detectTags(text){
-    const t=text.toLowerCase(); const out=[];
-    for(const [cat,words] of Object.entries(KEYWORDS)){
-      if(words.some(w=>new RegExp('\\b'+w+'\\b','i').test(t))) out.push(cat);
-    }
-    return out;
+    const toks=new Set(tokens(text));
+    const scored=LABELS.map(lab=>{
+      let s=0; VOCAB[lab].forEach(w=>{if(toks.has(w))s++;});
+      return {lab,s};
+    }).sort((a,b)=>b.s-a.s);
+    let chosen=scored.filter(x=>x.s>=2).map(x=>x.lab);   // threshold
+    if(!chosen.length && scored[0].s>0)chosen=[scored[0].lab]; // never empty if any hit
+    return chosen;
   }
-  function score(member,tags){ return tags.reduce((s,tg)=>s+(member.ex[tg]||0),0); }
   function render(){
     const text=title.value+' '+desc.value;
     const tags=detectTags(text);
-    tagsEl.innerHTML = tags.length? tags.map(t=>`<span class="tg t-${t}">${t.toUpperCase()}</span>`).join('') : '<span class="none">No tags matched yet — describe the issue.</span>';
+    tagsEl.innerHTML = tags.length? tags.map(t=>`<span class="tg t-${t}">${t.toUpperCase()}</span>`).join('') : '<span class="none">No tags matched yet — describe the bug.</span>';
 
-    // rank team
-    const ranked=TEAM.map(m=>({m,s:score(m,tags)})).sort((a,b)=> b.s-a.s || a.m.wl-b.m.wl);
-    const best = tags.length? ranked[0] : [...TEAM].sort((a,b)=>a.wl-b.wl).map(m=>({m,s:0}))[0];
-    if(tags.length && best.s>0){
+    // assignee suggestion: cosine of bug text vs each person's resolved corpus
+    const qv=tf(tokens(text));
+    const ranked=ASSIGNEES.map(a=>({a,s:cosine(qv,HVEC[a])})).sort((x,y)=>y.s-x.s);
+    const best=ranked[0];
+    if(best && best.s>0){
       assigneeEl.className='assignee';
-      assigneeEl.innerHTML=`<span class="av">${best.m.nm[0]}</span><div><div class="nm">${best.m.nm}</div><div class="rs">expertise ${best.s} for ${tags.join(', ')} · ${best.m.wl} open issues</div></div>`;
+      assigneeEl.innerHTML=`<span class="av">${best.a[0].toUpperCase()}</span><div><div class="nm">${best.a}</div><div class="rs">cosine ${best.s.toFixed(3)} · resolved mostly ${SPEC[best.a]} bugs</div></div>`;
     } else {
       assigneeEl.className='assignee empty';
-      assigneeEl.innerHTML=`<span class="av">?</span><div><div class="nm">${best.m.nm} (lowest workload)</div><div class="rs">no tag match — falling back to least-busy teammate</div></div>`;
+      assigneeEl.innerHTML=`<span class="av">?</span><div><div class="nm">no suggestion</div><div class="rs">nothing in history is similar yet — add more detail</div></div>`;
     }
-    teamEl.innerHTML=TEAM.map(m=>{
-      const s=score(m,tags); const win = (tags.length&&best.s>0&&m.nm===best.m.nm);
-      const exStr=Object.entries(m.ex).map(([k,v])=>`${k}:${v}`).join(' ');
-      return `<div class="tm ${win?'win':''}"><span class="nm">${m.nm}</span><span class="ex">${exStr}</span><span class="wl">wl ${m.wl}</span><span class="sc">${tags.length?'+'+s:''}</span></div>`;
+    teamEl.innerHTML=ranked.map(({a,s})=>{
+      const win=(best&&best.s>0&&a===best.a);
+      return `<div class="tm ${win?'win':''}"><span class="nm">${a}</span><span class="ex">${SPEC[a]}</span><span class="sc" style="margin-left:auto">${s.toFixed(3)}</span></div>`;
     }).join('');
   }
   document.getElementById('examples').addEventListener('click',e=>{

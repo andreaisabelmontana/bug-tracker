@@ -1,0 +1,170 @@
+[
+  {
+    "title": "App crashes on startup with null pointer",
+    "description": "The application throws a segfault and crashes immediately when launched. Stack trace shows a null pointer dereference in the init routine. Reproducible on every cold start.",
+    "assignee": "ada",
+    "status": "closed",
+    "labels": ["crash"]
+  },
+  {
+    "title": "Fatal exception when opening large files",
+    "description": "Opening files over 2GB causes the process to crash with an out-of-memory exception and the whole app dies. The crash log points to an unhandled exception in the file loader.",
+    "assignee": "ada",
+    "status": "closed",
+    "labels": ["crash"]
+  },
+  {
+    "title": "Segmentation fault in image decoder",
+    "description": "Decoding a malformed PNG triggers a segfault and the renderer crashes hard. The stack trace shows memory corruption deep in the decode loop.",
+    "assignee": "ada",
+    "status": "closed",
+    "labels": ["crash"]
+  },
+  {
+    "title": "Random crashes under heavy concurrency",
+    "description": "Under many concurrent requests the worker process crashes intermittently with a fatal signal. Looks like a race condition causing a hard crash and core dump.",
+    "assignee": "ada",
+    "status": "closed",
+    "labels": ["crash"]
+  },
+  {
+    "title": "Button misaligned on mobile layout",
+    "description": "The submit button overlaps the footer on small screens. The CSS layout breaks below 480px and the modal is not centered. Visual styling regression in the UI.",
+    "assignee": "beck",
+    "status": "closed",
+    "labels": ["ui"]
+  },
+  {
+    "title": "Dropdown menu renders off screen",
+    "description": "The navigation dropdown appears outside the viewport on the right edge. The z-index and positioning of the menu component are wrong, a clear front-end layout bug.",
+    "assignee": "beck",
+    "status": "closed",
+    "labels": ["ui"]
+  },
+  {
+    "title": "Dark mode colors unreadable",
+    "description": "In dark theme the text color and background have poor contrast and the icons are invisible. The stylesheet does not apply the correct theme tokens to several UI components.",
+    "assignee": "beck",
+    "status": "closed",
+    "labels": ["ui"]
+  },
+  {
+    "title": "Form labels overlap input fields",
+    "description": "On the settings page the form field labels overlap the text inputs and the spacing is broken. A pure CSS and layout styling problem in the front end.",
+    "assignee": "beck",
+    "status": "closed",
+    "labels": ["ui"]
+  },
+  {
+    "title": "Dashboard takes 30 seconds to load",
+    "description": "The main dashboard is extremely slow and the page takes far too long to render. Profiling shows an unindexed query and a slow N+1 loop causing the latency. Severe performance regression.",
+    "assignee": "cruz",
+    "status": "closed",
+    "labels": ["performance"]
+  },
+  {
+    "title": "API latency spikes under load",
+    "description": "Response times become very slow when traffic increases. The endpoint throughput drops and p99 latency is terrible. We need to optimize the slow code path for better performance.",
+    "assignee": "cruz",
+    "status": "closed",
+    "labels": ["performance"]
+  },
+  {
+    "title": "Memory usage grows until the app is slow",
+    "description": "Over time the service consumes more and more memory and becomes sluggish and slow to respond. A memory leak is degrading performance and increasing latency.",
+    "assignee": "cruz",
+    "status": "closed",
+    "labels": ["performance"]
+  },
+  {
+    "title": "Search query is unbearably slow",
+    "description": "Full text search takes several seconds per request. The slow query needs an index and caching to improve performance and reduce latency for users.",
+    "assignee": "cruz",
+    "status": "closed",
+    "labels": ["performance"]
+  },
+  {
+    "title": "Login fails with valid credentials",
+    "description": "Users cannot sign in even with the correct password. The authentication token is rejected and the OAuth login flow returns an invalid credentials error. Auth is broken.",
+    "assignee": "devi",
+    "status": "closed",
+    "labels": ["auth"]
+  },
+  {
+    "title": "JWT token expires too early",
+    "description": "Session tokens expire after a few minutes and force users to log in again. The auth middleware mishandles the token refresh and the login session is lost.",
+    "assignee": "devi",
+    "status": "closed",
+    "labels": ["auth"]
+  },
+  {
+    "title": "Password reset email never arrives",
+    "description": "The password reset and account recovery flow does not send the verification email. Users are locked out of authentication and cannot regain access to their login.",
+    "assignee": "devi",
+    "status": "closed",
+    "labels": ["auth"]
+  },
+  {
+    "title": "Permission check bypassed for admin routes",
+    "description": "An authorization bug lets unauthenticated users reach admin endpoints. The auth guard and role permission check are not enforced, a serious login and access control flaw.",
+    "assignee": "devi",
+    "status": "closed",
+    "labels": ["auth"]
+  },
+  {
+    "title": "Database connection pool exhausted",
+    "description": "The service runs out of database connections under load and queries fail with a pool timeout. The SQL connection pool is leaking and the db becomes unreachable.",
+    "assignee": "evan",
+    "status": "closed",
+    "labels": ["database"]
+  },
+  {
+    "title": "Migration corrupts the users table",
+    "description": "A schema migration dropped a column and corrupted rows in the database. The SQL migration script was not transactional and left the db in an inconsistent state.",
+    "assignee": "evan",
+    "status": "closed",
+    "labels": ["database"]
+  },
+  {
+    "title": "Deadlock on concurrent writes to orders",
+    "description": "Two transactions writing to the orders table deadlock and the database rolls back. The SQL locking order is inconsistent, causing query failures in the db layer.",
+    "assignee": "evan",
+    "status": "closed",
+    "labels": ["database"]
+  },
+  {
+    "title": "Query returns stale data after commit",
+    "description": "After a write the database read returns old rows because of a replication lag. The SQL query hits a stale replica and the db consistency is wrong.",
+    "assignee": "evan",
+    "status": "closed",
+    "labels": ["database"]
+  },
+  {
+    "title": "Requests time out behind the proxy",
+    "description": "Calls to the upstream service time out and the connection is refused intermittently. The network socket drops and TCP retries fail behind the load balancer.",
+    "assignee": "faye",
+    "status": "closed",
+    "labels": ["network"]
+  },
+  {
+    "title": "DNS resolution fails for internal hosts",
+    "description": "The client cannot resolve internal hostnames and the network request hangs. DNS lookups time out and the connection to the upstream host is never established.",
+    "assignee": "faye",
+    "status": "closed",
+    "labels": ["network"]
+  },
+  {
+    "title": "TLS handshake errors on the API gateway",
+    "description": "Clients get connection reset errors during the TLS handshake. The network proxy drops the socket and the HTTP connection fails before any request is sent.",
+    "assignee": "faye",
+    "status": "closed",
+    "labels": ["network"]
+  },
+  {
+    "title": "Webhook delivery drops packets intermittently",
+    "description": "Outbound webhooks fail randomly with connection timeout and reset errors. The network path to the remote endpoint is unstable and TCP packets are dropped.",
+    "assignee": "faye",
+    "status": "closed",
+    "labels": ["network"]
+  }
+]
